@@ -1,37 +1,43 @@
 \name{dice.roll}
 \alias{dice.roll}
 \title{Dice simulator}
-\description{Simulates rolling of a die}
+\description{Simulates rolling of a set of dice.}
 \usage{
-dice.roll(N, rolls, weights)
+dice.roll(faces, dice, rolls, weights)
 }
 \arguments{
-  \item{N}{ the number of faces the die has; if unspecified, it
+  \item{faces}{ The number of faces the dice have; if unspecified, it
             defaults to 6.}
-  \item{rolls}{ the number of times to roll the die; if unspeciefid, it
+  \item{dice}{ The number of dice to roll; if unspecified, it
+              defaults to 1.}
+  \item{rolls}{ The number of times to roll the die; if unspeciefid, it
             defaults to 1.}
-  \item{weights}{ a vector of probability weights to assign to each
+  \item{weights}{ A vector of probability weights to assign to each
                   face of the die; if unspecified, it defaults to a fair
-                  die with weights $1/N$. If specified, its lenght must
-                  obviously be $N$ and all the single weights must sum up to 1.}
+                  die with weights \eqn{1/N}. If specified, its lenght
+                  must obviously be = \emph{faces} and all the
+                  single weights must sum up to 1.}
 }
-%- maybe also 'usage' for other objects documented here.
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
- \item{results}{ the numerical results rolled.}
- \item{frequencies}{ a table containing each single occurrency
-                    and the corresponding frequencies.}
+ \item{results}{ The numerical results rolled.}
+ \item{frequencies}{ A table containing each single occurrency (permutation)
+                      of results and the corresponding frequencies.}
+ \item{sums_freq}{ A table containing the frequencies of the sums of the
+                  values obtained in each single roll by all the dice.
+                  A cumulative sum is provided too.}
+ \item{exp_value_sum}{ The expectation value of the sum of the values obtained.}
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
 \author{
-Gennaro Tedesco
+Gennaro Tedesco: \email{gennarotedesco@gmail.com}
 }
 \note{
-It's awesome
+The case face = 2 corresponds to the coin flip.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
@@ -40,17 +46,18 @@ It's awesome
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+## To simulate the rolling of two 6-faced fair dice 5 times
 
-## The function is currently defined as
-function ()
-{
-    print("rolling a die...")
-  }
+dice.roll(6, 2, 5)$results
+
+\dontrun{
+   die_1 die_2
+1:     4     5
+2:     3     4
+3:     2     3
+4:     5     5
+5:     2     5
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

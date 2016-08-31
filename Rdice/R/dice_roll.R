@@ -1,32 +1,67 @@
 # function to simulate a die roll
+#' @import data.table
 
-dice.roll <- function(N = 6, rolls = 10, weights){
+values.formatting <- function(values, dice){
+  if(dice > 1){
+    values <- t(values)
+    colnames(values) <- paste0("die_", 1:dice)
+  }
+  values <- as.data.table(values)
+  return(values)
+}
+
+
+frequency.counts <- function(values){
+  freq_table <- as.data.table(table(values))
+  freq_table$freq <- freq_table$N/sum(freq_table$N)
+  freq_table <- freq_table[, "N" := NULL]
+  return(freq_table)
+}
+
+sum.counts <- function(values){
+  values$sum <- apply(values, 1, sum)
+  sum_table  <- values[, .N, by = sum]
+  sum_table$freq    <- sum_table$N/sum(sum_table$N)
+  sum_table$cum_sum <- cumsum(sum_table$freq)
+  sum_table  <- sum_table[, N := NULL]
+  setorder(sum_table, sum)
+  return(sum_table)
+}
+
+#' @export
+dice.roll <- function(faces = 6, dice = 1, rolls = 10, weights){
   if(missing(weights)){
     # case of a fair die
-    values <- sample(1:N, rolls, replace = TRUE, prob = NULL)
-    frequencies <- as.data.table(table(values))
-    setnames(frequencies, c("values", "occurrencies"))
-    frequencies$freq <- frequencies$occurrencies/sum(frequencies$occurrencies)
-  } else {
+    values <- replicate(rolls, sample(1:faces, dice, replace = TRUE, prob = NULL))
+    values <- values.formatting(values, dice)
+    freq_table <- frequency.counts(values)
+    sum_table  <- sum.counts(values)
+    exp_value_sum  <- sum(sum_table$sum*sum_table$freq)
+  }
+   else {
     e <-tryCatch(
       {
-        !(length(weights)==N & sum(weights)==1)
+        !(length(weights)==faces & sum(weights)==1)
       },
       error = function(){
         return(TRUE)
       }
     )
     if(!e){
-      # actual function if no exception is thrown
-      values <-sample(1:N, rolls, replace = TRUE, prob = weights)
-      frequencies <- as.data.table(table(values))
-      setnames(frequencies, c("values", "occurrencies"))
-      frequencies$freq <- frequencies$occurrencies/sum(frequencies$occurrencies)
+      # case of an unfair die
+      values <- replicate(rolls, sample(1:faces, dice, replace = TRUE, prob = weights))
+      values <- values.formatting(values, dice)
+      freq_table <- frequency.counts(values)
+      sum_table  <- sum.counts(values)
+      exp_value_sum  <- sum(sum_table$sum*sum_table$freq)
     } else {
-      stop("The vector of weights must be of the same lenght as the number of faces N. Also, the weights must sum up to 1.")
+      stop("The vector of weights must be of the same lenght as the number of faces. Also, the weights must sum up to 1.")
     }
   }
-  list(results = values, frequencies = frequencies)
+  list(results = values
+       ,frequencies = freq_table
+       ,sums_freq = sum_table
+       ,exp_value_sum = exp_value_sum)
 }
 
 
