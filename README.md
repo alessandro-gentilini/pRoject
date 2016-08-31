@@ -1,3 +1,7 @@
 # Gennaro Tedesco
 
-## Collection of non-in-built functions for data science
+## Rdice
+
+This repository is home for the package `Rdice` and for an introductory manual on how to use `R` for data science.
+
+
