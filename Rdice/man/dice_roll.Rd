@@ -3,7 +3,7 @@
 \title{Dice simulator}
 \description{Simulates rolling of a set of dice.}
 \usage{
-dice.roll(faces, dice, rolls, weights)
+dice.roll(faces = ..., dice = ..., rolls = ..., weights = ...)
 }
 \arguments{
   \item{faces}{ The number of faces the dice have; if unspecified, it
