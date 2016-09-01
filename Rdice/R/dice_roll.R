@@ -29,7 +29,7 @@ sum.counts <- function(values){
 }
 
 #' @export
-dice.roll <- function(faces = 6, dice = 1, rolls = 10, weights){
+dice.roll <- function(faces = 6, dice = 2, rolls = 5, weights){
   if(missing(weights)){
     # case of a fair die
     values <- replicate(rolls, sample(1:faces, dice, replace = TRUE, prob = NULL))
@@ -58,10 +58,27 @@ dice.roll <- function(faces = 6, dice = 1, rolls = 10, weights){
       stop("The vector of weights must be of the same lenght as the number of faces. Also, the weights must sum up to 1.")
     }
   }
-  list(results = values
-       ,frequencies = freq_table
-       ,sums_freq = sum_table
-       ,exp_value_sum = exp_value_sum)
+  return_object <-list(results = values
+                       ,frequencies = freq_table
+                       ,sums_freq = sum_table
+                       ,exp_value_sum = exp_value_sum
+                       ,rolls = rolls
+                       ,dice = dice)
+
+  return_object$call <- match.call()
+  class(return_object) <- "diceRoll"
+  return(return_object)
 }
 
 
+print.diceRoll <- function(x){
+  cat("Call:\n")
+  print(x$call)
+  cat("\n Results after", x$rolls, "rolls of", x$dice, "dice:\n")
+  print(x$results)
+  cat("\n Frequency table for each occurrency:\n")
+  print(x$frequencies)
+  cat("\n Frequency table of the sums:\n")
+  print(x$sums_freq)
+  cat("\n Expectation value:", x$exp_value_sum)
+}
