@@ -14,6 +14,7 @@ values.formatting <- function(values, dice){
 frequency.counts <- function(values){
   freq_table <- as.data.table(table(values))
   freq_table$freq <- freq_table$N/sum(freq_table$N)
+  freq_table <- freq_table[N>0]
   freq_table <- freq_table[, "N" := NULL]
   return(freq_table)
 }
@@ -22,9 +23,9 @@ sum.counts <- function(values){
   values$sum <- apply(values, 1, sum)
   sum_table  <- values[, .N, by = sum]
   sum_table$freq    <- sum_table$N/sum(sum_table$N)
+  setorder(sum_table, sum)
   sum_table$cum_sum <- cumsum(sum_table$freq)
   sum_table  <- sum_table[, N := NULL]
-  setorder(sum_table, sum)
   return(sum_table)
 }
 
@@ -82,3 +83,5 @@ print.diceRoll <- function(x){
   print(x$sums_freq)
   cat("\n Expectation value:", x$exp_value_sum)
 }
+
+
