@@ -46,18 +46,7 @@ The case face = 2 corresponds to the coin flip.
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-## To simulate the rolling of two 6-faced fair dice 5 times
-
-dice.roll(6, 2, 5)$results
-
-\dontrun{
-   die_1 die_2
-1:     4     5
-2:     3     4
-3:     2     3
-4:     5     5
-5:     2     5
-}
+## Provide examples
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 
