@@ -1,0 +1,274 @@
+%************************************************
+\section{The \pkg{dplyr} package}\label{sec: dplyr}
+%************************************************
+\samp{install.packages(`dplyr')}\\
+\samp{library(`dplyr')}
+\bigskip 
+
+\samp{dplyr} allows pretty much the same operations as
+\samp{data.table}, only with a different grammar. We
+will exploit its features showing the equivalent
+\samp{data.table} syntax for comparison.
+
+\subsection{Subsetting a data set upon constraints}
+Data sets can be ordered by columns values as
+follows:
+\begin{example}
+		dplyr
+R: arrange(iris, Species, desc(Sepal.Length))
+ 
+ 		data.table
+R: setorder(iris, Species, -Sepal.Length)
+ 
+   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.8         4.0          1.2         0.2  setosa
+2          5.7         4.4          1.5         0.4  setosa
+3          5.7         3.8          1.7         0.3  setosa
+4          5.5         4.2          1.4         0.2  setosa
+5          5.5         3.5          1.3         0.2  setosa
+\end{example}
+
+Columns in a data set can be accessed by name
+or position reference:
+\begin{example}
+		dplyr
+R: select(iris, Species , Petal.Width, Petal.Length)
+R: select(iris, c(5,4,3))
+ 
+		data.table
+R: iris[, .(Species, Petal.Width, Petal.Length)]
+R: iris[, c(5,4,3), with = FALSE]
+
+   Species Petal.Width Petal.Length
+1  setosa         0.2          1.4
+2  setosa         0.2          1.4
+3  setosa         0.2          1.3
+4  setosa         0.2          1.5
+5  setosa         0.2          1.4
+\end{example}
+New columns can be defined and added as
+\begin{example}
+		dplyr
+R: mutate(iris, new_value = Sepal.Length/Sepal.Width)
+R: select(iris, new_values, Species)
+
+# to only keep the new variables use
+R: transmute(iris, new_value = Sepal.Length/Sepal.Width, Species)
+
+		data.table
+R: iris[, .(new_value = Sepal.Length/Sepal.Width, Species)]
+
+     new_value   Species
+  1:  1.457143    setosa
+  2:  1.633333    setosa
+  3:  1.468750    setosa
+  4:  1.483871    setosa
+  5:  1.388889    setosa
+\end{example}
+and can be deleted as 
+\samp{select(iris, -Petal.Width, -Petal.Length)}.
+\bigskip
+
+Rows can be subset according to constraints
+\begin{example}
+		dplyr
+R: filter(iris, 
+       Species == 'virginica'
+       & (Petal.Width > 2.3 | Sepal.Width <3))
+
+R: filter(iris,
+          !Species %in% c("virginica", "setosa"))
+       
+		data.table
+R: subset(iris, 
+       Species == 'virginica'
+       & (Petal.Width > 2.3 | Sepal.Width < 3)) 
+       
+R: subset(iris,
+          !Species %in% c("virginica", "setosa"))       
+\end{example}
+The rows in correspondence of a match
+can be extracted with
+\begin{example}
+		dplyr
+R: iris %>% 
+     group_by(Species)  %>% 
+       filter(Petal.Length == max(Petal.Length))
+       
+		data.table
+R: iris[
+        iris[, 
+             .I[Petal.Length = max(Petal.Length)], 
+	     by = Species]$V1
+       ]
+	
+   Sepal.Length Sepal.Width Petal.Length Petal.Width    Species
+1:          5.1         3.5          1.4         0.2     setosa
+2:          6.5         2.8          4.6         1.5 versicolor
+3:          7.6         3.0          6.6         2.1  virginica
+\end{example}
+
+Simple frequencies counts per group can be obtained 
+via the \samp{count} function
+\begin{example}
+		dplyr
+R: iris %>% 
+     count(Species) 
+
+		data.table
+R: iris[, 
+        .N,
+        by = Species
+        ]
+
+     Species  n
+1     setosa 50
+2 versicolor 50
+3  virginica 50
+\end{example}
+The equivalent of \samp{lapply(.SD, fun)} is:
+\begin{example}
+		dplyr
+R: iris %>%
+     group_by(Species) %>%
+       summarise_each(funs(sd))
+ 
+		data.table
+R: iris[,
+	lapply(.SD, sd),
+	by = Species
+	]
+
+     Species Sepal.Length Sepal.Width Petal.Length Petal.Width
+1     setosa    0.3524897   0.3790644    0.1736640   0.1053856
+2 versicolor    0.5161711   0.3137983    0.4699110   0.1977527
+3  virginica    0.6358796   0.3224966    0.5518947   0.2746501
+\end{example}
+
+\subsection{Random and unique rows}
+Random rows can be easily subset with
+\begin{example}
+		dplyr
+R: set.seed(1)
+R: sample_n(quarks, 10)
+
+		data.table
+R: set.seed(1)
+R: quarks[sample(.N,10)]
+\end{example}
+Unlike \samp{data.table}, the package 
+\samp{dplyr} allows for sampling in percentage
+as fractions of the number of elements of the 
+initial data set: \samp{sample\_frac(df, size = 0.3)}
+does the job, for example.
+Unique values can be fetched on 
+constraints as
+\begin{example}
+		dplyr 
+R: quarks %>%
+     distinct(flavour, S_z)
+     
+		data.table
+R: unique(quarks, by = c("flavour", "S_z"))
+\end{example}
+
+\subsection{Grouping by}
+Variables can by grouped by according to
+the following grammar:
+\begin{example}
+		dplyr
+R: iris %>% 
+    group_by(Species) %>%
+        summarise(mean = mean(Petal.Width), dev = sd(Petal.Width))
+        
+R: iris[,
+        .(mean = mean(Petal.Width), dev = sd(Petal.Width)), 
+        by = Species
+        ]
+
+      Species  mean       dev
+1:     setosa 0.246 0.1053856
+2: versicolor 1.326 0.1977527
+3:  virginica 2.026 0.2746501
+
+\end{example}
+
+
+\subsection{Joining data sets}
+Joins in \samp{dplyr} can be performed using
+straightforward although verbose syntax, as 
+shown in the following.
+\bigskip 
+
+\subsubsection*{Inner joins}
+Given two data sets with at least one common
+variable, inner joins are performed using 
+the following expression:
+\begin{example}
+set.seed(10)
+first <- sample_n(quarks,10)
+
+set.seed(20)
+second<- sample_n(quarks,10)
+
+R: inner_join(first, second, by = c("lab", "flavour"))
+
+  lab flavour S_z.x S_z.y
+1   B strange   1/2  -1/2
+2   C strange  -1/2   1/2
+3   C strange   1/2   1/2
+4   C strange   1/2   1/2
+5   D  bottom   1/2   1/2
+6   F  bottom   1/2   1/2
+\end{example}
+
+\subsubsection*{Left joins}
+Equivalently for left joins
+\begin{example}
+R: left_join(first, second, by = c("lab", "flavour")) 
+
+   lab flavour S_z.x S_z.y
+1    B  charme   1/2    NA
+2    B strange   1/2  -1/2
+3    C  charme  -1/2    NA
+4    C strange  -1/2   1/2
+5    C strange   1/2   1/2
+6    C strange   1/2   1/2
+7    D  bottom   1/2   1/2
+8    D strange  -1/2    NA
+9    E  charme  -1/2    NA
+10   F  bottom   1/2   1/2 
+\end{example}
+Unlike the \samp{X[Y]} method in \samp{data.table},
+columns are here not automatically sorted after 
+having been merged.
+
+\subsubsection*{Full joins}
+Along the same lines:
+\begin{example}
+R: full_join(first, second, by = c("lab", "flavour"))
+
+   lab flavour S_z.x S_z.y
+1    C strange  -1/2   1/2
+2    C strange   1/2   1/2
+3    D strange  -1/2  <NA>
+4    E  charme  -1/2  <NA>
+5    D  bottom   1/2   1/2
+6    B  charme   1/2  <NA>
+7    C  charme  -1/2  <NA>
+...
+\end{example}
+
+\subsubsection*{Anti-joins}
+The anti-joins returns all the rows in the first
+data sets not present in the second one
+\begin{example}
+R: anti_join(first, second, by = c("lab", "flavour"))
+
+  lab flavour  S_z
+1   B  charme  1/2
+2   C  charme -1/2
+3   D strange -1/2
+4   E  charme -1/2
+\end{example}
+

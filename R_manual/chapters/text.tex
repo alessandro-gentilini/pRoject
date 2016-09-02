@@ -1,0 +1,61 @@
+%************************************************
+\section{Text manipulation}\label{sec: text}
+%************************************************
+\samp{install.package(stringr)}\\
+\samp{library(stringr)}
+\bigskip 
+
+Use \samp{str\_trim} to trim leading and 
+tailing white spaces:
+\begin{example}
+s <- ' Hello, world! '
+
+R: str_trim(s, side = "left") | R: str_trim(s, side = "right")
+[1] "Hello, world! "          | [1] " Hello, world!"
+
+R: str_trim(s)                | R: str_trim("\n\nHello, world!\t")
+[1] "Hello, world!"           | [1] "Hello, world!"
+\end{example}
+In order to replace \emph{all} white space (and likewise
+any other character) use \samp{str\_replace\_all}.
+\begin{example}
+R: str_replace_all(s, fixed(" "), "") 
+
+[1] "Hello,world!"
+
+R: str_replace_all(s, "l", "!")
+[1] " He!!o, wor!d! "
+\end{example}
+The functions \samp{tolower} and \samp{toupper}
+do the job as named:
+\begin{example}
+R: tolower(s)         | R: toupper(s)
+[1] "hello, world!"   | [1] "HELLO, WORLD!"
+\end{example}
+Strings can be alphabetically sorted using the 
+\samp{sort} numerical function plus a little manipulation
+of the characters. This can be useful when checking
+whether a certain number of words having the same number
+of characters are anagrams of one other: the standars
+procedure is to split their letters and sort them
+alphabetically to match them. 
+\begin{example}
+sort.word <- function(x){
+ x <- tolower(x)
+ x <- str_replace_all(x, fixed(" "), "")    
+ x <- paste(sort(unlist(strsplit(x, ""))), collapse = "") 
+ return(x)
+}
+
+is.anagram <- function(x,y){
+    return(sort.word(x) == sort.word(y))
+}
+
+first  <- "Eleven plus Two"
+second <- "Twelve plus One"
+third  <- "Ten plus three"
+
+R: is.anagram(first, second)    | R: is.anagram(first, third)
+[1] TRUE                        | [1] FALSE                        
+\end{example}
+
