@@ -14,6 +14,17 @@ S_z      <- sample(c("1/2", "-1/2"), 100, replace = TRUE)
 quarks   <- data.table(lab, flavour, S_z)
 
 
+# first k factorials, namely n*(n-1)*...*(n-k+1)
+k_factorial <- function(n, k){
+  if(k==1){
+    return(1)
+  } else {
+    values <- ((n-k+1)/n)*k_factorial(n,k-1)
+    values
+  }
+}
+
+
 # shapiro p.value function
 shapiro.p.value <- function(my.column) {
     my.p.value <- '0.05'
