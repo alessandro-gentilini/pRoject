@@ -1,5 +1,4 @@
-# function to simulate a poker hand
-#' @import data.table
+# function to simulate poker hands
 
 is.high.card <- function(hand){
   return(length(unique(hand$figures))==5 &&
@@ -88,7 +87,7 @@ hand.evaluation <- function(hand){
 }
 
 
-#' @export
+# poker hand being dealt
 poker.hand <- function(){
   figures  <- rep(c(2:10, "J", "Q", "K", "A"),4)
   values   <- rep(c(2:10, 11, 12, 13, 14),4)
@@ -100,7 +99,6 @@ poker.hand <- function(){
 }
 
 
-#' @export
 print.pokerHand <- function(x, ...){
   cat("Call:\n")
   print(x$call)
