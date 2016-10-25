@@ -3,9 +3,14 @@ library(DT)
 library(data.table)
 library(jsonlite)
 library(shiny)
+library(shinythemes)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
+
+  #---------------------------------------------
+  # -------------- Functions -------------------
+  #---------------------------------------------
 
   is.inner.list <- function(argument){
     return(is.list(argument[[1]]))
@@ -19,6 +24,7 @@ shinyServer(function(input, output, session) {
       rd
   })
 
+
   # unlisted values
   unlisted_values <- reactive({
       x <- parse_file()
@@ -27,8 +33,27 @@ shinyServer(function(input, output, session) {
       x
   })
 
+
+  #---------------------------------------------
+  # -------------- Outputs ---------------------
+  #---------------------------------------------
+
+  # general introduction text
+  output$instructions <- renderText({
+    if(is.null(input$inputfile)){
+      paste("Choose a file to import: once so, a first table",
+            "with the general un-nested object will be populated.",
+            "In correspondence of each of those, the top menu",
+            "allows to choose the corresponding nested sub-lists.", sep="\n")
+    } else {
+      paste("The top menu allows to choose the",
+            "corresponding nested sub-lists.", sep="\n")
+    }
+  })
+
+
   # general output
-  output$general <- DT::renderDataTable(
+  output$generalTable <- DT::renderDataTable(
     if(!is.null(input$inputfile))
       datatable(parse_file())
   )
