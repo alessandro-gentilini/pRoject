@@ -17,10 +17,10 @@ shinyServer(function(input, output, session) {
   }
 
   is.inner.data.frame <- function(argument){
-    return(is.data.frame(argument[[1]]))
+    return(is.data.frame(argument[[1]][[1]]))
   }
 
-  # format and parse the JSON object
+  # format and parse the JSON file as object
   parse_file <- reactive({
       raw.data <- readLines(input$inputfile$datapath, warn = "F")
       rd <- fromJSON(raw.data)
@@ -29,20 +29,18 @@ shinyServer(function(input, output, session) {
   })
 
 
-  # unlisted values
+  # obtaining the unlisted values (values that are not nested)
   unlisted_values <- reactive({
       x <- parse_file()
       x <- x[,which(!sapply(x, is.inner.list)), with = FALSE]
-      x <- data.table(x)
       x
   })
 
 
-  # listed values
+  # obtaining the listed values (values that are nested)
   listed_values <- reactive({
     x <- parse_file()
     x <- x[,which(sapply(x, is.inner.list)), with = FALSE]
-    x <- data.table(x)
     x
   })
 
@@ -50,18 +48,14 @@ shinyServer(function(input, output, session) {
   # output tables of flattened listed values
   flattened_lists <- reactive({
     x <- listed_values()
-      if(input$listed_values == "address"){
-        #if(!is.inner.data.frame(x[, input$listed_value])){
-        y <- x[, input$listed_value, with = FALSE]
-        y <- data.frame(t(unlist(y)))
-        #y <- data.frame(t(unlist(x[, input$listed_value])))
-        is.data.frame(y)
-        #return(input$listed_values)
-      } else {
-        y <- y[, input$listed_value][[1]]
-        y <- data.table(y)
+      if(!is.inner.data.frame(x[, input$listed_values, with = FALSE])){
+        y <- data.frame(t(unlist(x[, input$listed_values, with = FALSE])))
+        names(y) <- unique(unlist(lapply(strsplit(names(y), '.', fixed = TRUE), '[', 2)))
         y
-      }
+      } else if(is.inner.data.frame(x[, input$listed_values, with = FALSE])){
+        y <- x[, input$listed_values, with = FALSE][[1]][[1]]
+        y
+      } 
   })
 
   #---------------------------------------------
@@ -93,28 +87,27 @@ shinyServer(function(input, output, session) {
       unlisted_values()
   )
 
-  # output listed values
+  # output listed values in a column to choose among
   output$listed_values = renderUI({
     req(input$inputfile)
     if(nrow(listed_values()) > 0){
       selectizeInput(inputId = 'listed_values',
                      label = 'nested objects',
                      choices = c("", names(listed_values())),
-                     options = list(placeholder = 'choose a nested object...')
+                     options = list(
+                               placeholder = 'choose a nested object...',
+                               onInitialize = I('function() { this.setValue(""); }')
+                              )
                      )
     } else
       return("no nested objects")
   })
 
-
+  
+  # output of the flattened listed values as a table
   output$listed_values_table <- DT::renderDataTable(
-      req(input$listed_values),
-      flattened_lists()
+      if(input$listed_values != "")
+        datatable(flattened_lists())
   )
-
-  output$condition <- renderText({
-    req(input$listed_values)
-    is.data.frame(flattened_lists())
-  })
 
 })

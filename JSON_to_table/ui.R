@@ -1,6 +1,6 @@
 
 library(shiny)
-
+library(shinythemes)
 
 navbarPage("JSON to table", theme = shinytheme("united"),
            tabPanel("Upload",
@@ -28,15 +28,16 @@ navbarPage("JSON to table", theme = shinytheme("united"),
                     )
            ),
            tabPanel("Summary",
-                    uiOutput('listed_values'),
+                    fluidRow(align = "center",
+                      uiOutput('listed_values')
+                    ),
                     br(),
                     fluidRow(align = "center",
                              div(hr(),
                                  DT::dataTableOutput("listed_values_table"),
                                  style= "width: 75%"
                              )
-                    ),
-                    textOutput("condition")
+                    )
           )
 
 )
