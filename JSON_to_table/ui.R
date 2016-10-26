@@ -22,12 +22,21 @@ navbarPage("JSON to table", theme = shinytheme("united"),
                     br(),
                     fluidRow(align = "center",
                             div(hr(),
-                                DT::dataTableOutput("unlisted_values"),
+                                DT::dataTableOutput("unlisted_values_table"),
                                 style= "width: 75%"
                                 )
                     )
            ),
            tabPanel("Summary",
-                    helpText("A (not so short) help text")
-           )
+                    uiOutput('listed_values'),
+                    br(),
+                    fluidRow(align = "center",
+                             div(hr(),
+                                 DT::dataTableOutput("listed_values_table"),
+                                 style= "width: 75%"
+                             )
+                    ),
+                    textOutput("condition")
+          )
+
 )
